@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>سایت متصل به Gemini MCP</title>
-  <style>
+  <title>صفحه ساز داینامیک متصل به MCP</title>
+  <style id="base-styles">
     :root {
       --primary: #2563eb;
       --bg: #0f172a;
@@ -20,38 +20,45 @@
       line-height: 1.7;
       padding: 20px;
     }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
+    .container { max-width: 900px; margin: 0 auto; }
     .banner {
       background-color: var(--primary);
-      color: white;
-      padding: 14px 20px;
+      color: #fff;
+      padding: 12px 18px;
       border-radius: 12px;
       text-align: center;
       font-weight: bold;
-      margin-bottom: 24px;
-      transition: background-color 0.4s ease;
+      margin-bottom: 20px;
     }
     .card {
       background-color: var(--card);
       border: 1px solid #334155;
       border-radius: 16px;
-      padding: 24px;
+      padding: 20px;
       margin-bottom: 20px;
     }
-    h1 { margin-top: 0; font-size: 1.8rem; }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+    }
     .meta {
       font-size: 0.85rem;
       color: var(--muted);
-      margin-top: 16px;
+      margin-top: 14px;
       border-top: 1px solid #334155;
-      padding-top: 12px;
+      padding-top: 10px;
     }
     .mcp-box {
       background: #020617;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
@@ -59,96 +66,129 @@
       gap: 10px;
       direction: ltr;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       color: #38bdf8;
-      border: 1px solid #1e293b;
-    }
-    button {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover { opacity: 0.9; }
-    .status-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      background: #22c55e;
-      border-radius: 50%;
-      margin-left: 6px;
     }
   </style>
+  <style id="gemini-dynamic-styles"></style>
 </head>
 <body>
+  <div class="container">
+    <div id="announcement-banner" class="banner">در حال بارگذاری...</div>
+    <h1 id="page-title" style="margin-top: 0;">در حال اتصال...</h1>
 
-<div class="container">
-  <!-- بنر اطلاعیه قابل ویرایش توسط Gemini -->
-  <div id="announcement-banner" class="banner">در حال بارگذاری اطلاعات زنده...</div>
+    <div id="sections-container"></div>
 
-  <!-- محتوای اصلی سایت -->
-  <div class="card">
-    <h1 id="site-title">در حال اتصال به سرور...</h1>
-    <p id="site-about">لطفاً صبر کنید، در حال دریافت آخرین تغییرات از سرور MCP...</p>
-    <div class="meta">
-      <span class="status-dot"></span>
-      آخرین ویرایش توسط: <strong id="updated-by">-</strong> |
-      زمان: <span id="updated-at">-</span>
+    <div class="card">
+      <h3 style="margin-top: 0;">اتصال MCP</h3>
+      <div class="mcp-box">
+        <span id="mcp-url-text"></span>
+        <button class="btn" style="margin-top: 0;" onclick="copyMcpUrl()">کپی</button>
+      </div>
+      <div class="meta">
+        آخرین ویرایش توسط: <strong id="updated-by">-</strong> |
+        زمان: <span id="updated-at">-</span>
+      </div>
     </div>
   </div>
 
-  <!-- بخش لینک اختصاصی اتصال MCP -->
-  <div class="card">
-    <h3 style="margin-top: 0;">🔗 لینک اختصاصی اتصال MCP به Gemini</h3>
-    <p style="font-size: 0.9rem; color: var(--muted);">
-      این لینک را در بخش تنظیمات MCP / Extensions وارد کنید تا مدل به ابزارهای خواندن و ویرایش این سایت دسترسی پیدا کند:
-    </p>
-    <div class="mcp-box">
-      <span id="mcp-url-text">لطفاً آدرس Worker را در کد تنظیم کنید</span>
-      <button onclick="copyMcpUrl()">کپی لینک</button>
-    </div>
-  </div>
-</div>
+  <script>
+    const WORKER_URL = "https://gemini-site-editor.traelfnii.workers.dev";
+    const mcpEndpoint = `${WORKER_URL}/mcp`;
+    document.getElementById("mcp-url-text").textContent = mcpEndpoint;
 
-<script>
-  // ⚠️ آدرس Cloudflare Worker خود را اینجا قرار دهید (بدون اسلش انتهایی)
-  const WORKER_URL = "https://gemini-site-editor.traelfnii.workers.dev";
-
-  const mcpEndpoint = `${WORKER_URL}/mcp`;
-  document.getElementById("mcp-url-text").textContent = mcpEndpoint;
-
-  function copyMcpUrl() {
-    navigator.clipboard.writeText(mcpEndpoint);
-    alert("لینک MCP کپی شد:\n" + mcpEndpoint);
-  }
-
-  async function loadSiteContent() {
-    try {
-      const res = await fetch(`${WORKER_URL}/api/content`);
-      const data = await res.json();
-
-      document.getElementById("site-title").textContent = data.title;
-      document.getElementById("announcement-banner").textContent = data.announcement;
-      document.getElementById("site-about").textContent = data.about;
-      document.getElementById("updated-by").textContent = data.lastUpdatedBy;
-      document.getElementById("updated-at").textContent = new Date(data.updatedAt).toLocaleString("fa-IR");
-
-      if (data.themeColor) {
-        document.documentElement.style.setProperty("--primary", data.themeColor);
-      }
-    } catch (err) {
-      document.getElementById("site-title").textContent = "خطا در اتصال به Worker";
-      document.getElementById("site-about").textContent = "مطمئن شوید آدرس WORKER_URL در فایل index.html به درستی وارد شده است.";
+    function copyMcpUrl() {
+      navigator.clipboard.writeText(mcpEndpoint);
     }
-  }
 
-  // بارگذاری اولیه و بررسی خودکار تغییرات هر 10 ثانیه
-  loadSiteContent();
-  setInterval(loadSiteContent, 10000);
-</script>
+    function renderSections(sections = []) {
+      const container = document.getElementById("sections-container");
+      container.innerHTML = "";
 
-</body>
-</html>
+      for (const sec of sections) {
+        if (!sec || typeof sec !== "object") continue;
+
+        if (sec.type === "hero") {
+          const box = document.createElement("div");
+          box.className = "dynamic-hero";
+
+          if (sec.heading) {
+            const h2 = document.createElement("h2");
+            h2.style.marginTop = "0";
+            h2.textContent = sec.heading;
+            box.appendChild(h2);
+          }
+          if (sec.text) {
+            const p = document.createElement("p");
+            p.textContent = sec.text;
+            box.appendChild(p);
+          }
+          if (sec.ctaText) {
+            const a = document.createElement("a");
+            a.className = "btn";
+            a.textContent = sec.ctaText;
+            a.href = (sec.ctaLink && (sec.ctaLink.startsWith("https://") || sec.ctaLink.startsWith("http://") || sec.ctaLink.startsWith("#")))
+              ? sec.ctaLink
+              : "#";
+            box.appendChild(a);
+          }
+          container.appendChild(box);
+        } else if (sec.type === "cards") {
+          if (sec.heading) {
+            const h3 = document.createElement("h3");
+            h3.textContent = sec.heading;
+            container.appendChild(h3);
+          }
+          const grid = document.createElement("div");
+          grid.className = "dynamic-grid";
+
+          for (const item of (sec.items || [])) {
+            const card = document.createElement("div");
+            card.className = "dynamic-card";
+
+            if (item.title) {
+              const t = document.createElement("h4");
+              t.style.marginTop = "0";
+              t.textContent = item.title;
+              card.appendChild(t);
+            }
+            if (item.description) {
+              const d = document.createElement("p");
+              d.style.marginBottom = "0";
+              d.textContent = item.description;
+              card.appendChild(d);
+            }
+            grid.appendChild(card);
+          }
+          container.appendChild(grid);
+        } else {
+          const card = document.createElement("div");
+          card.className = "card";
+          if (sec.heading) {
+            const h3 = document.createElement("h3");
+            h3.style.marginTop = "0";
+            h3.textContent = sec.heading;
+            card.appendChild(h3);
+          }
+          if (sec.text) {
+            const p = document.createElement("p");
+            p.style.marginBottom = "0";
+            p.textContent = sec.text;
+            card.appendChild(p);
+          }
+          container.appendChild(card);
+        }
+      }
+    }
+
+    async function loadSiteContent() {
+      try {
+        const res = await fetch(`${WORKER_URL}/api/content`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        document.title = data.title || "صفحه ساز داینامیک";
+        document.getElementById("page-title").textContent = data.title || "";
+        document.getElementById("announcement-banner").textContent = data.announcement || "";
+        document.getElementById("updated-by").textContent = data.lastUpdatedBy || "-";
+        document.getElementById("updated-at").textContent = data.
