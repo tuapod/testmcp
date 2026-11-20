@@ -191,4 +191,22 @@
         document.getElementById("page-title").textContent = data.title || "";
         document.getElementById("announcement-banner").textContent = data.announcement || "";
         document.getElementById("updated-by").textContent = data.lastUpdatedBy || "-";
-        document.getElementById("updated-at").textContent = data.
+        document.getElementById("updated-at").textContent = data.updatedAt
+          ? new Date(data.updatedAt).toLocaleString("fa-IR")
+          : "-";
+
+        if (data.themeColor) {
+          document.documentElement.style.setProperty("--primary", data.themeColor);
+        }
+        document.getElementById("gemini-dynamic-styles").textContent = data.customCss || "";
+        renderSections(data.sections || []);
+      } catch (err) {
+        document.getElementById("page-title").textContent = "خطا در دریافت اطلاعات";
+      }
+    }
+
+    loadSiteContent();
+    setInterval(loadSiteContent, 8000);
+  </script>
+</body>
+</html>
